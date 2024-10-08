@@ -1,19 +1,22 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
+import { useCartStore } from '@/stores/user/cart';
 
-import { useCartStore } from '@/stores/user/cart'
-
-const cartStore = useCartStore()
-
+const cartStore = useCartStore();
 const router = useRouter();
 const isLoggedIn = ref(false);
 const searchText = ref('');
+const isDarkTheme = ref(false);
 
 onMounted(() => {
   if (localStorage.getItem('isLoggedIn')) {
     isLoggedIn.value = true;
   }
+
+  const currentTheme = localStorage.getItem('theme') || 'fantasy';
+  isDarkTheme.value = currentTheme === 'dark';
+  document.documentElement.setAttribute("data-theme", currentTheme);
 });
 
 const login = () => {
@@ -36,6 +39,13 @@ const handleSearch = (event) => {
     });
   }
 };
+
+const toggleTheme = () => {
+  isDarkTheme.value = !isDarkTheme.value;
+  const newTheme = isDarkTheme.value ? "dark" : "fantasy";
+  document.documentElement.setAttribute("data-theme", newTheme);
+  localStorage.setItem('theme', newTheme);
+}
 </script>
 
 <template>
@@ -43,7 +53,9 @@ const handleSearch = (event) => {
     <div class="navbar bg-base-100">
       <div class="flex-1">
         <RouterLink :to="{ name: 'home' }" class="btn btn-ghost text-xl">Ecom</RouterLink>
+        <input type="checkbox" :checked="isDarkTheme" @change="toggleTheme" class="toggle theme-controller" />
       </div>
+
       <div class="flex-none gap-2">
         <div class="form-control">
           <input type="text" placeholder="Search" class="input input-bordered w-24 md:w-auto" v-model="searchText"
