@@ -31,7 +31,6 @@ const filterProducts = computed(() => {
 
 const addToCart = (product) => {
   cartStore.addToCart(product)
-  router.push({ name: 'cart' })
 }
 
 </script>

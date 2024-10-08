@@ -3,7 +3,8 @@ import { defineProps } from 'vue';
 
 defineProps({
   products: Array,
-  addToCart: Function
+  addToCart: Function,
+  buyNow: Function
 });
 </script>
 
@@ -17,7 +18,8 @@ defineProps({
         <h2 class="card-title">{{ product.name }}!</h2>
         <p>{{ product.about }}</p>
         <div class="card-actions justify-end">
-          <button @click="addToCart(product)" class="btn btn-primary">Buy Now</button>
+          <button @click="addToCart(product)" class="btn btn-outline btn-primary">Add To Cart</button>
+          <button @click="buyNow(product)" class="btn btn-primary">Buy Now</button>
         </div>
       </div>
     </div>

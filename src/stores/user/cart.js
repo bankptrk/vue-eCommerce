@@ -22,16 +22,24 @@ export const useCartStore = defineStore('cart', {
         this.items = JSON.parse(previousCart);
       }
     },
-    addToCart(productData) {
-        const findIndexProduct = this.items.findIndex(item => item.name === productData.name)
-        if (findIndexProduct === -1){
-            productData.quantity = 1;
-            this.items.push(productData)
-        }else{
-            const currItem = this.items[findIndexProduct]
-            this.updateQuantity(findIndexProduct, currItem.quantity + 1)
-        }
+    addOrUpdateCart(productData) {
+      const findIndexProduct = this.items.findIndex(
+        (item) => item.name === productData.name
+      );
+      if (findIndexProduct === -1) {
+        productData.quantity = 1;
+        this.items.push(productData);
+      } else {
+        const currItem = this.items[findIndexProduct];
+        this.updateQuantity(findIndexProduct, currItem.quantity + 1);
+      }
       localStorage.setItem('cart-data', JSON.stringify(this.items));
+    },
+    addToCart(productData) {
+      this.addOrUpdateCart(productData);
+    },
+    buyNow(productData) {
+      this.addOrUpdateCart(productData);
     },
     updateQuantity(index, quantity) {
       this.items[index].quantity = quantity;

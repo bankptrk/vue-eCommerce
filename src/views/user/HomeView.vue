@@ -14,9 +14,11 @@ const productStore = useProductStore();
 
 const addToCart = (product) => {
   cartStore.addToCart(product)
-  router.push({
-    name: 'cart'
-  })
+}
+
+const buyNow = (product) => {
+  cartStore.buyNow(product)
+  router.push({ name: 'cart' })
 }
 </script>
 
@@ -39,6 +41,6 @@ const addToCart = (product) => {
     </div>
 
     <!-- Product card-->
-    <Product :products="productStore.list" :addToCart="addToCart"></Product>
+    <Product :products="productStore.list" :addToCart="addToCart" :buyNow="buyNow"></Product>
   </UserLayout>
 </template>
