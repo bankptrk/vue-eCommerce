@@ -6,11 +6,16 @@ import Product from '@/components/Product.vue';
 import UserLayout from '@/layouts/UserLayout.vue';
 
 import { useProductStore } from '@/stores/user/product';
+import { useCartStore } from '@/stores/user/cart';
 
 const productStore = useProductStore();
+const cartStore = useCartStore();
+
 const searchText = ref('');
 
 const route = useRoute();
+
+
 watch(
   () => route.query.q,
   (newSearchText) => {
@@ -22,6 +27,11 @@ watch(
 const filterProducts = computed(() => {
   return productStore.filterProducts(searchText.value);
 });
+
+const addToCart = (product) => {
+  cartStore.addToCart(product)
+}
+
 </script>
 
 <template>
@@ -30,6 +40,6 @@ const filterProducts = computed(() => {
       Search: <b>{{ searchText }}</b>
     </div>
 
-    <Product :products="filterProducts"></Product
-  ></UserLayout>
+    <Product :products="filterProducts" :addToCart="addToCart"></Product>
+  </UserLayout>
 </template>

@@ -3,18 +3,22 @@ import UserLayout from '@/layouts/UserLayout.vue';
 import Product from '@/components/Product.vue';
 
 import { useProductStore } from '@/stores/user/product';
+import { useCartStore } from '@/stores/user/cart'
+
+const cartStore = useCartStore()
 
 const productStore = useProductStore();
+
+const addToCart = (product) => {
+  cartStore.addToCart(product)
+}
 </script>
 
 <template>
   <UserLayout>
-    <div
-      class="hero h-96"
-      style="
+    <div class="hero h-96" style="
         background-image: url(https://img.daisyui.com/images/stock/photo-1507358522600-9f71e620c44e.webp);
-      "
-    >
+      ">
       <div class="hero-overlay bg-opacity-60"></div>
       <div class="hero-content text-neutral-content text-center">
         <div class="max-w-md">
@@ -29,6 +33,6 @@ const productStore = useProductStore();
     </div>
 
     <!-- Product card-->
-    <Product :products="productStore.list"></Product>
+    <Product :products="productStore.list" :addToCart="addToCart"></Product>
   </UserLayout>
 </template>
