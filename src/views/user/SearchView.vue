@@ -1,6 +1,6 @@
 <script setup>
-import { onMounted, ref, computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 import Product from '@/components/Product.vue';
 import UserLayout from '@/layouts/UserLayout.vue';
@@ -8,12 +8,13 @@ import UserLayout from '@/layouts/UserLayout.vue';
 import { useProductStore } from '@/stores/user/product';
 import { useCartStore } from '@/stores/user/cart';
 
+const router = useRouter()
+const route = useRoute();
+
 const productStore = useProductStore();
 const cartStore = useCartStore();
 
 const searchText = ref('');
-
-const route = useRoute();
 
 
 watch(
@@ -30,6 +31,7 @@ const filterProducts = computed(() => {
 
 const addToCart = (product) => {
   cartStore.addToCart(product)
+  router.push({ name: 'cart' })
 }
 
 </script>
