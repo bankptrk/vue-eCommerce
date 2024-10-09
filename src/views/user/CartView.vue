@@ -2,6 +2,8 @@
 import UserLayout from '@/layouts/UserLayout.vue';
 import Close from '@/components/icons/Close.vue';
 import { useCartStore } from '@/stores/user/cart';
+import { RouterLink } from 'vue-router';
+
 
 const cartStore = useCartStore();
 
@@ -65,6 +67,7 @@ const changeQuantity = (event, index) => {
             <div>ราคารวม</div>
             <div>{{ cartStore.summaryPrice }}</div>
           </div>
+          <RouterLink :to="{ name: 'checkout' }" class="btn btn-neutral w-full mt-4">Buy</RouterLink>
         </div>
       </div>
     </div>
