@@ -39,7 +39,7 @@ const updateProfile = () => {
 
 <template>
   <UserLayout>
-    <div class="max-w-4xl border border-base-200 shadow-xl mx-auto p-8 bg-white rounded-lg mt-5">
+    <div class="max-w-4xl border border-base-200 shadow-xl mx-auto p-8 bg-white rounded-lg m-5">
       <div class="font-bold text-2xl">Your Profile</div>
       <div class="flex flex-col items-center">
         <div class="flex flex-col items-center">
@@ -66,7 +66,7 @@ const updateProfile = () => {
         <input v-model="profileData.name" type="text" placeholder="Type here" class="input input-bordered w-full" />
       </label>
 
-      <button @click="updateProfile" class="btn btn-neutral w-full mt-4">Update Profile</button>
+      <button @click="updateProfile" class="btn btn-neutral w-full m-4">Update Profile</button>
     </div>
   </UserLayout>
 </template>
