@@ -2,26 +2,28 @@ import { defineStore } from 'pinia';
 
 export const useAdminProductStore = defineStore('admin-product', {
     state: () => ({
-        list: [
-            {
-                name: 'test',
-                imageURL: 'https://fastly.picsum.photos/id/337/200/200.jpg?hmac=9bd24xSAcmLdObO71hB9dXskhXQmQ2b0YB3QTAzhUtY',
-                price: 200,
-                quantity: 20,
-                remainQuantity: 6,
-                status: 'open',
-                updateAt: (new Date()).toISOString()
-            }
-        ]
+        list: [],
+        loaded: false
     }),
     actions: {
+        loadProduct(){
+            const products = localStorage.getItem('admin-product')
+            if(products){
+                this.list = JSON.parse(products)
+                this.loaded = true
+            }
+        },
         getProduct(index){
+            if(!this.loaded){
+                this.loadProduct()
+            }
             return this.list[index]
         },
         addProduct(productData){
             productData.remainQuantity = productData.quantity
             productData.updateAt = (new Date()).toISOString()
             this.list.push(productData)
+            localStorage.setItem('admin-product', JSON.stringify(this.list))
         },
         updateProduct(index, productData){
             this.list[index].name = productData.name
@@ -31,9 +33,13 @@ export const useAdminProductStore = defineStore('admin-product', {
             this.list[index].remainQuantity = productData.quantity
             this.list[index].status = productData.status
             this.list[index].updateAt = (new Date()).toISOString()
+            localStorage.setItem('admin-product', JSON.stringify(this.list))
+
         },
         removeProduct(index){
             this.list.splice(index, 1)
+            localStorage.setItem('admin-product', JSON.stringify(this.list))
+
         }
     }
 

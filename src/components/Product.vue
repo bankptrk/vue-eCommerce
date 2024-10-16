@@ -14,7 +14,7 @@ defineProps({
         <img class="w-full" :src="product.imageUrl" />
       </figure>
       <div class="card-body">
-        <h2 class="card-title">{{ product.name }}!</h2>
+        <h2 class="card-title">{{ product.name }}</h2>
         <p>{{ product.about }}</p>
         <div class="card-actions justify-end">
           <button @click="addToCart(product)" class="btn btn-outline btn-primary">Add To Cart</button>

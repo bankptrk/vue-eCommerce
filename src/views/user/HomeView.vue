@@ -6,14 +6,18 @@ import Product from '@/components/Product.vue';
 
 import { useProductStore } from '@/stores/user/product';
 import { useCartStore } from '@/stores/user/cart'
+import { useEventStore } from '@/stores/event'
 
 const router = useRouter()
-const cartStore = useCartStore()
 
+const cartStore = useCartStore()
+const eventStore = useEventStore()
 const productStore = useProductStore();
 
 const addToCart = (product) => {
   cartStore.addToCart(product)
+  eventStore.popupMessage('success', 'Add product to cart is successful')
+
 }
 
 const buyNow = (product) => {
