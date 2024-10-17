@@ -1,46 +1,81 @@
 import { defineStore } from 'pinia';
 
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  addDoc,
+} from 'firebase/firestore';
+
+import { db } from '@/firebase';
+
 export const useAdminProductStore = defineStore('admin-product', {
-    state: () => ({
-        list: [],
-        loaded: false
-    }),
-    actions: {
-        loadProduct(){
-            const products = localStorage.getItem('admin-product')
-            if(products){
-                this.list = JSON.parse(products)
-                this.loaded = true
-            }
-        },
-        getProduct(index){
-            if(!this.loaded){
-                this.loadProduct()
-            }
-            return this.list[index]
-        },
-        addProduct(productData){
-            productData.remainQuantity = productData.quantity
-            productData.updateAt = (new Date()).toISOString()
-            this.list.push(productData)
-            localStorage.setItem('admin-product', JSON.stringify(this.list))
-        },
-        updateProduct(index, productData){
-            this.list[index].name = productData.name
-            this.list[index].imageURL = productData.imageURL
-            this.list[index].price = productData.price
-            this.list[index].quantity = productData.quantity
-            this.list[index].remainQuantity = productData.quantity
-            this.list[index].status = productData.status
-            this.list[index].updateAt = (new Date()).toISOString()
-            localStorage.setItem('admin-product', JSON.stringify(this.list))
+  state: () => ({
+    list: [],
+    loaded: false,
+  }),
+  actions: {
+    async loadProduct() {
+      try {
+        const productCol = collection(db, 'products');
+        const productSnapshot = await getDocs(productCol);
+        const products = productSnapshot.docs.map((doc) => {
+          const convertedProduct = doc.data();
+          convertedProduct.pid = doc.id;
+          convertedProduct.updateAt = new Date();
+          return convertedProduct;
+        });
+        this.list = products;
+      } catch (error) {
+        console.log('error', error);
+      }
+    },
+    async getProduct(pid) {
+      try {
+        const productRef = doc(db, 'products', pid);
+        const productSnapshot = await getDoc(productRef);
+        return productSnapshot.data();
+      } catch (error) {
+        console.log('error', error);
+      }
+    },
+    async addProduct(productData) {
+      try {
+        productData.remainQuantity = productData.quantity;
+        productData.updateAt = new Date();
+        const productCol = collection(db, 'products');
+        await addDoc(productCol, productData);
+      } catch (error) {
+        console.log('error', error);
+      }
+    },
+    async updateProduct(pid, productData) {
+      try {
+        const updateProductData = {};
+        updateProductData.name = productData.name;
+        updateProductData.imageUrl = productData.imageUrl;
+        updateProductData.price = productData.price;
+        updateProductData.quantity = productData.quantity;
+        updateProductData.remainQuantity = productData.quantity;
+        updateProductData.status = productData.status;
+        updateProductData.updateAt = new Date();
 
-        },
-        removeProduct(index){
-            this.list.splice(index, 1)
-            localStorage.setItem('admin-product', JSON.stringify(this.list))
-
-        }
-    }
-
-})
+        const productRef = doc(db, 'products', pid);
+        await setDoc(productRef, updateProductData);
+      } catch (error) {
+        console.log('error', error);
+      }
+    },
+    async removeProduct(pid) {
+      try {
+        const productRef = doc(db, 'products', pid);
+        await deleteDoc(productRef);
+      } catch (error) {
+        console.log('error', error);
+      }
+    },
+  },
+});

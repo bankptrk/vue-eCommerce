@@ -15,14 +15,18 @@ import Table from '@/components/Table.vue';
 const adminProductStore = useAdminProductStore()
 const eventStore = useEventStore()
 
-onMounted(() => {
-    adminProductStore.loadProduct()
+onMounted(async () => {
+    await adminProductStore.loadProduct()
 })
 
-const removeProduct = (index) => {
-    adminProductStore.removeProduct(index)
-    eventStore.popupMessage('success', 'Delete product successful')
-
+const removeProduct = async (pid) => {
+    try {
+        await adminProductStore.removeProduct(pid)
+        eventStore.popupMessage('success', 'Delete product successful')
+        await adminProductStore.loadProduct()
+    } catch (error) {
+        console.log('error', error)
+    }
 }
 
 </script>
@@ -36,7 +40,7 @@ const removeProduct = (index) => {
             </div>
         </div>
         <Table :headers="['Name', 'Image', 'Price', 'Quantity', 'Status', 'Updated At', '']">
-            <tr v-for="(product, index) in adminProductStore.list" :key="product.name">
+            <tr v-for="product in adminProductStore.list" :key="product.name">
                 <th>{{ product.name }}</th>
                 <td><img class="w-12" :src="product.imageUrl" alt="Product Image" /></td>
                 <td>{{ product.price }}</td>
@@ -49,11 +53,11 @@ const removeProduct = (index) => {
                 <td>{{ product.updateAt }}</td>
                 <td>
                     <div class="flex gap-1">
-                        <RouterLink :to="{ name: 'admin-product-update', params: { id: index } }"
+                        <RouterLink :to="{ name: 'admin-product-update', params: { id: product.pid } }"
                             class="btn btn-ghost p-3">
                             <Edit class="w-5 h-5" />
                         </RouterLink>
-                        <button class="btn btn-ghost p-3" @click="removeProduct(index)">
+                        <button class="btn btn-ghost p-3" @click="removeProduct(product.pid)">
                             <Trash class="w-5 h-5" />
                         </button>
                     </div>

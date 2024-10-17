@@ -49,25 +49,31 @@ const productData = reactive({
 })
 
 
-const addProduct = () => {
-    if (mode.value == 'EDIT') {
-        adminProductStore.updateProduct(productIndex.value, productData)
-        eventStore.popupMessage('success', 'Edit product successful')
-    } else {
-        adminProductStore.addProduct(productData)
-        eventStore.popupMessage('success', 'Add product successful')
+
+const addProduct = async () => {
+    try {
+        if (mode.value === 'EDIT') {
+            await adminProductStore.updateProduct(productIndex.value, productData)
+            eventStore.popupMessage('success', 'Edit product successful')
+        } else {
+            await adminProductStore.addProduct(productData)
+            eventStore.popupMessage('success', 'Add product successful')
+        }
+        router.push({
+            name: 'admin-product-list'
+        })
+    } catch (error) {
+        console.log('error', error)
     }
-    router.push({
-        name: 'admin-product-list'
-    })
+
 
 }
 
-onMounted(() => {
+onMounted(async () => {
     if (route.params.id) {
-        productIndex.value = parseInt(route.params.id)
+        productIndex.value = route.params.id
         mode.value = 'EDIT'
-        const selectedProduct = adminProductStore.getProduct(productIndex.value)
+        const selectedProduct = await adminProductStore.getProduct(productIndex.value)
         if (selectedProduct) {
             productData.name = selectedProduct.name;
             productData.imageUrl = selectedProduct.imageUrl;
@@ -76,7 +82,6 @@ onMounted(() => {
             productData.about = selectedProduct.about;
             productData.status = selectedProduct.status;
         } else {
-            alert("Product not found!");
             eventStore.popupMessage('info', 'Product not found!')
             router.push({ name: 'admin-product-list' });
         }
