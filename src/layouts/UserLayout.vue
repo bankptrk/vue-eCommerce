@@ -1,35 +1,41 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
+
+
+
 import { useCartStore } from '@/stores/user/cart';
+import { useAccountStore } from '@/stores/account'
 
 const cartStore = useCartStore();
+const accountStore = useAccountStore()
+
 const router = useRouter();
-const isLoggedIn = ref(false);
+
 const searchText = ref('');
 const isDarkTheme = ref(false);
 
 onMounted(() => {
-  if (localStorage.getItem('isLoggedIn')) {
-    isLoggedIn.value = true;
-  }
-
   const currentTheme = localStorage.getItem('theme') || 'fantasy';
   isDarkTheme.value = currentTheme === 'dark';
   document.documentElement.setAttribute("data-theme", currentTheme);
 });
 
-const login = () => {
-  isLoggedIn.value = true;
-  localStorage.setItem('isLoggedIn', true);
+const login = async () => {
+  try {
+    await accountStore.signInWithGoogle()
+  } catch (error) {
+    console.log(error)
+  }
 };
 
-const logout = () => {
-  isLoggedIn.value = false;
-  localStorage.removeItem('isLoggedIn');
-  localStorage.removeItem('cart-data');
-  localStorage.removeItem('order-data');
-  window.location.reload()
+const logout = async () => {
+  try {
+    await accountStore.logout()
+    window.location.reload()
+  } catch (error) {
+    console.log(error)
+  }
 };
 
 const handleSearch = (event) => {
@@ -85,7 +91,7 @@ const toggleTheme = () => {
             </div>
           </div>
         </div>
-        <button @click="login" v-if="!isLoggedIn" class="btn btn-ghost">
+        <button @click="login" v-if="!accountStore.isLoggedIn" class="btn btn-ghost">
           Login
         </button>
         <div v-else class="dropdown dropdown-end">

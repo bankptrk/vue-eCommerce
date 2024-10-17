@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia';
 
+import { collection, getDocs } from 'firebase/firestore'; 
+import {db} from '@/firebase'
+
 export const useProductStore = defineStore('product', {
   state: () => ({
     list: [],
@@ -9,10 +12,11 @@ export const useProductStore = defineStore('product', {
     filterProducts(searchText) {
       return this.list.filter((product) => product.name.includes(searchText));
     },
-    loadProduct(){
-      const products = localStorage.getItem('admin-product')
-      if(products){
-          this.list = JSON.parse(products)
+    async loadProduct(){
+      const productSnapshot = await getDocs(collection(db, 'products'));
+      const products = productSnapshot.docs.map(doc => doc.data())
+      if(products.length > 0){
+          this.list = products
           this.loaded = true
       }
     }
