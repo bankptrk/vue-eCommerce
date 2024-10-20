@@ -44,7 +44,10 @@ export const useAccountStore = defineStore('account', {
               await setDoc(docRef, newUser);
               this.profile = newUser;
             }
-            if (this.profile.role === 'admin') {
+            if (
+              this.profile.role === 'admin' ||
+              this.profile.role === 'moderator'
+            ) {
               this.isAdmin = true;
             }
             this.isLoggedIn = true;
