@@ -8,7 +8,7 @@ import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 import { auth, db } from '@/firebase';
 
@@ -25,35 +25,43 @@ export const useAccountStore = defineStore('account', {
     async checkAuth() {
       return new Promise((reslove) => {
         onAuthStateChanged(auth, async (user) => {
-          if (user) {
-            this.user = user;
+          try {
+            if (user) {
+              this.user = user;
 
-            const docRef = doc(db, 'users', user.uid);
+              // console.log('user', user);
 
-            const docSnap = await getDoc(docRef);
+              const docRef = doc(db, 'users', user.uid);
 
-            if (docSnap.exists()) {
-              this.profile = docSnap.data();
+              const docSnap = await getDoc(docRef);
+
+              if (docSnap.exists()) {
+                this.profile = docSnap.data();
+              } else {
+                const newUser = {
+                  fullname: user.displayName,
+                  role: 'member',
+                  status: 'active',
+                  updateAt: new Date(),
+                };
+                await setDoc(docRef, newUser);
+                this.profile = newUser;
+              }
+              if (
+                this.profile.role === 'admin' ||
+                this.profile.role === 'moderator'
+              ) {
+                this.isAdmin = true;
+              }
+              this.isLoggedIn = true;
+              this.profile.email = user.email;
+              // console.log('profile', this.profile);
+              reslove(true);
             } else {
-              const newUser = {
-                fullname: user.displayName,
-                role: 'member',
-                status: 'active',
-                updateAt: new Date(),
-              };
-              await setDoc(docRef, newUser);
-              this.profile = newUser;
+              reslove(false);
             }
-            if (
-              this.profile.role === 'admin' ||
-              this.profile.role === 'moderator'
-            ) {
-              this.isAdmin = true;
-            }
-            this.isLoggedIn = true;
-            reslove(true);
-          } else {
-            reslove(false);
+          } catch (error) {
+            console.log('error', error);
           }
         });
       });
@@ -64,7 +72,19 @@ export const useAccountStore = defineStore('account', {
         this.isLoggedIn = true;
         this.user = result.user;
       } catch (error) {
-        console.log(error);
+        console.log('error', error);
+      }
+    },
+    async updateProfile(userData) {
+      try {
+        const updateUserData = {
+          fullname: userData.fullname,
+          imageUrl: userData.imageUrl,
+        };
+        const useRef = doc(db, `users/${this.user.uid}`);
+        await updateDoc(useRef, updateUserData);
+      } catch (error) {
+        console.loe('error', error);
       }
     },
     async logout() {
@@ -73,7 +93,7 @@ export const useAccountStore = defineStore('account', {
         this.isAdmin = false;
         await signOut(auth);
       } catch (error) {
-        console.log(error);
+        console.log('error', error);
       }
     },
     async signInAdmin(email, password) {
@@ -82,7 +102,7 @@ export const useAccountStore = defineStore('account', {
         this.isLoggedIn = true;
         this.isAdmin = true;
       } catch (error) {
-        console.log(error);
+        console.log('error', error);
         switch (error.code) {
           case 'auth/invalid-email':
             throw new Error('Invalid email or password');

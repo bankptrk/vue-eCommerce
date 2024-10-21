@@ -97,8 +97,8 @@ const toggleTheme = () => {
         <div v-else class="dropdown dropdown-end">
           <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
             <div class="w-10 rounded-full">
-              <img alt="Tailwind CSS Navbar component"
-                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+              <img alt="profile"
+                :src="accountStore.profile.imageUrl || 'https://cdn.discordapp.com/attachments/410748661149073410/1297838156002889748/user.png?ex=67176179&is=67160ff9&hm=ab880042067f0278df9d8ec52a7a474bdd9660eab83036cbc404ee98ace5a8af&'" />
             </div>
           </div>
           <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">

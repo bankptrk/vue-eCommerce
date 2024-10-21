@@ -110,6 +110,8 @@ router.beforeEach(async (to, from, next) => {
     next({ name: 'home' });
   } else if (to.name === 'login' && accountStore.isAdmin) {
     next({ name: 'admin-dashboard' });
+  } else if (to.name === 'profile' && !accountStore.isLoggedIn) {
+    next({ name: 'home' });
   } else {
     next();
   }

@@ -2,7 +2,8 @@
 import { onMounted, reactive, ref } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
-
+import { storage } from '@/firebase'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import { useAdminProductStore } from '@/stores/admin/product'
@@ -16,7 +17,8 @@ const formData = [
     },
     {
         name: 'Image',
-        field: 'imageUrl'
+        field: 'imageUrl',
+        type: 'upload-image'
     },
     {
         name: 'Price',
@@ -65,9 +67,27 @@ const addProduct = async () => {
     } catch (error) {
         console.log('error', error)
     }
-
-
 }
+
+const handleFileUpload = async (event) => {
+    try {
+        let path = ''
+        if (productIndex.value !== -1) {
+            path = productIndex.value + '-'
+        }
+        const file = event.target.files[0];
+        if (file) {
+            const uploadRef = storageRef(storage, `products/${path}${file.name}`)
+
+            const snapshot = await uploadBytes(uploadRef, file)
+            const downloadUrl = await getDownloadURL(snapshot.ref)
+            productData.imageUrl = downloadUrl;
+        }
+    } catch (error) {
+        console.log('error', error)
+    }
+
+};
 
 onMounted(async () => {
     if (route.params.id) {
@@ -101,8 +121,21 @@ onMounted(async () => {
                     <div class="label">
                         <span class="label-text">{{ form.name }}</span>
                     </div>
-                    <input v-model="productData[form.field]" type="text" placeholder="Type here"
-                        class="input input-bordered w-full " />
+                    <input v-if="form.type !== 'upload-image'" v-model="productData[form.field]" type="text"
+                        placeholder="Type here" class="input input-bordered w-full " />
+                    <div v-else>
+                        <div class="avatar">
+                            <div class="w-24 rounded-full">
+                                <img :src="productData[form.field]">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-control w-full max-w-xs">
+                                <input type="file" class="file-input file-input-bordered w-full max-w-xs file-input-sm"
+                                    @change="handleFileUpload" />
+                            </label>
+                        </div>
+                    </div>
                 </label>
             </div>
             <div class="divider"></div>

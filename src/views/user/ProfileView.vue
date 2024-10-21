@@ -2,35 +2,55 @@
 import { reactive, onMounted } from 'vue';
 import UserLayout from '@/layouts/UserLayout.vue';
 
+import { storage } from '@/firebase'
+import { useAccountStore } from '@/stores/account'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+
+const accountStore = useAccountStore()
+
 const profileData = reactive({
-  imageUrl: 'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp',
+  imageUrl: '',
   email: '',
-  name: ''
+  fullname: ''
 });
 
 onMounted(() => {
-  let savedProfileData = localStorage.getItem('profile-data');
+  const savedProfileData = accountStore.profile
   if (savedProfileData) {
-    savedProfileData = JSON.parse(savedProfileData);
-    profileData.imageUrl = savedProfileData.imageUrl;
+    profileData.imageUrl = (savedProfileData.imageUrl || 'https://cdn.discordapp.com/attachments/410748661149073410/1297838156002889748/user.png?ex=67176179&is=67160ff9&hm=ab880042067f0278df9d8ec52a7a474bdd9660eab83036cbc404ee98ace5a8af&');
     profileData.email = savedProfileData.email;
-    profileData.name = savedProfileData.name;
+    profileData.fullname = savedProfileData.fullname;
   }
 });
 
-const handleFileUpload = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      profileData.imageUrl = e.target.result;
-    };
-    reader.readAsDataURL(file);
+const handleFileUpload = async (event) => {
+  try {
+    const file = event.target.files[0];
+    if (file) {
+      const uploadRef = ref(storage, `users/${accountStore.user.uid}/${file.name}`)
+
+      const snapshot = await uploadBytes(uploadRef, file)
+      const downloadUrl = await getDownloadURL(snapshot.ref)
+      profileData.imageUrl = downloadUrl;
+    }
+  } catch (error) {
+    console.log('error', error)
   }
+
 };
 
-const updateProfile = () => {
-  localStorage.setItem('profile-data', JSON.stringify(profileData));
+const updateProfile = async () => {
+  try {
+    const updateprofileData = {
+      imageUrl: profileData.imageUrl,
+      fullname: profileData.fullname,
+      email: profileData.email
+    }
+    await accountStore.updateProfile(updateprofileData)
+  } catch (error) {
+    console.log('error', error)
+  }
+
 };
 
 
@@ -56,14 +76,15 @@ const updateProfile = () => {
         <div class="label">
           <span class="label-text">Email</span>
         </div>
-        <input v-model="profileData.email" type="text" placeholder="Type here" class="input input-bordered w-full" />
+        <input type="text" placeholder="Type here" class="input input-bordered w-full"
+          :value="accountStore.profile.email" disabled />
       </label>
 
       <label class="form-control w-full">
         <div class="label">
           <span class="label-text">Name</span>
         </div>
-        <input v-model="profileData.name" type="text" placeholder="Type here" class="input input-bordered w-full" />
+        <input v-model="profileData.fullname" type="text" placeholder="Type here" class="input input-bordered w-full" />
       </label>
 
       <button @click="updateProfile" class="btn btn-neutral w-full m-4">Update Profile</button>
