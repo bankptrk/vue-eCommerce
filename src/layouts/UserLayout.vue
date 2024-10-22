@@ -2,13 +2,13 @@
 import { ref, onMounted } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
-
-
 import { useCartStore } from '@/stores/user/cart';
 import { useAccountStore } from '@/stores/account'
+import { useEventStore } from '@/stores/event'
 
 const cartStore = useCartStore();
 const accountStore = useAccountStore()
+const eventStore = useEventStore()
 
 const router = useRouter();
 
@@ -19,11 +19,13 @@ onMounted(() => {
   const currentTheme = localStorage.getItem('theme') || 'fantasy';
   isDarkTheme.value = currentTheme === 'dark';
   document.documentElement.setAttribute("data-theme", currentTheme);
+  eventStore.loadBanner()
 });
 
 const login = async () => {
   try {
     await accountStore.signInWithGoogle()
+    window.location.reload()
   } catch (error) {
     console.log(error)
   }
@@ -115,6 +117,12 @@ const toggleTheme = () => {
     </div>
 
     <!-- main content -->
+
+    <div class="mb-5" v-if="eventStore.banner.display">
+      <a :href="eventStore.banner.link" target="_blank">
+        <img class="w-full" :src="eventStore.banner.imageUrl">
+      </a>
+    </div>
 
     <slot></slot>
 
