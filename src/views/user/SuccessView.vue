@@ -16,7 +16,6 @@ onMounted(async () => {
       const data = await cartStore.loadCheckout(orderId);
       if (data) {
         orderData.value = data;
-        console.log('orderData', orderData.value);
       } else {
         console.log('No order data found');
       }

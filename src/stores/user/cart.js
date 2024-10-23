@@ -110,7 +110,6 @@ export const useCartStore = defineStore('cart', {
         let orderData = orderSnapshot.data();
         orderData.createAt = orderData.createAt.toDate();
         orderData.orderNumber = orderSnapshot.id;
-        console.log('orderData From loadcheckout', orderData);
         return orderData;
       } catch (error) {
         console.log('error', error);

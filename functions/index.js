@@ -10,7 +10,6 @@ app.post('/placeorder', async (req, res) => {
     let orderData = {};
     let successOrderId = '';
     const checkoutData = req.body.checkout;
-    console.log('checkoutData', checkoutData);
     const products = checkoutData.products;
 
     await db.runTransaction(async (transaction) => {
