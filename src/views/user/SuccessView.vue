@@ -1,18 +1,33 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router'
 import UserLayout from '@/layouts/UserLayout.vue';
 import { useCartStore } from '@/stores/user/cart';
+
+const route = useRoute();
 
 const cartStore = useCartStore();
 const orderData = ref({});
 
-onMounted(() => {
-  cartStore.loadCheckout();
-  if (cartStore.checkout.orderNumber) {
-    orderData.value = cartStore.checkout;
+onMounted(async () => {
+  const orderId = route.query.order_id;
+  if (orderId) {
+    try {
+      const data = await cartStore.loadCheckout(orderId);
+      if (data) {
+        orderData.value = data;
+        console.log('orderData', orderData.value);
+      } else {
+        console.log('No order data found');
+      }
+    } catch (error) {
+      console.log('Error loading checkout data:', error);
+    }
+  } else {
+    console.log('No order ID provided');
   }
-  console.log(cartStore.checkout);
 });
+
 </script>
 
 <template>
@@ -28,7 +43,7 @@ onMounted(() => {
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
         <div class="flex flex-col items-center">
           <div class="font-bold text-base">Order date</div>
-          <div class="text-gray-600">{{ orderData.createDate }}</div>
+          <div class="text-gray-600">{{ orderData.createAt }}</div>
         </div>
         <div class="flex flex-col items-center">
           <div class="font-bold text-base">Order number</div>

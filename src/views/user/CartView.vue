@@ -19,7 +19,7 @@ const changeQuantity = (event, index) => {
     <div class="flex">
       <div class="flex-auto w-64 bg-base-200 p-2">
         <div v-if="cartStore.items.length === 0">Cart is empty</div>
-        <div v-else v-for="(item, index) in cartStore.items" :key="item.name" class="flex">
+        <div v-else v-for="(item, index) in cartStore.items" :key="index" class="flex">
           <div class="flex-1">
             <img class="w-full p-10" :src="item.imageUrl" />
           </div>

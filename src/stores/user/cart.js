@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
+import axios from 'axios';
 
-import { updateDoc, increment, doc, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db, realtimeDB } from '@/firebase';
 import { ref, onValue, set } from 'firebase/database';
 
@@ -81,25 +82,38 @@ export const useCartStore = defineStore('cart', {
     },
     async placeorder(userData) {
       try {
-        const orderData = {
+        const checkoutData = {
           ...userData,
-          totalPrice: this.summaryPrice,
-          paymentMethod: 'Credit Card',
-          createDate: new Date().toLocaleString('en-US', {
-            timeZone: 'Asia/Bangkok',
-          }),
-          orderNumber: `AA${Math.floor(Math.random() * 90000 + 10000)}`,
-          products: this.items,
+          products: this.items.map((product) => ({
+            productId: product.productId,
+            quantity: product.quantity,
+          })),
         };
-        localStorage.setItem('order-data', JSON.stringify(orderData));
+
+        const response = await axios.post('/api/placeorder', {
+          source: 'test_src',
+          checkout: checkoutData,
+        });
+        return response.data;
       } catch (error) {
         console.log('error', error);
       }
     },
-    loadCheckout() {
-      const orderData = localStorage.getItem('order-data');
-      if (orderData) {
-        this.checkout = JSON.parse(orderData);
+    async loadCheckout(orderId) {
+      try {
+        // check rule
+        const orderRefs = collection(db, 'orders');
+        getDocs(orderRefs);
+
+        const orderRef = doc(db, 'orders', orderId);
+        const orderSnapshot = await getDoc(orderRef);
+        let orderData = orderSnapshot.data();
+        orderData.createAt = orderData.createAt.toDate();
+        orderData.orderNumber = orderSnapshot.id;
+        console.log('orderData From loadcheckout', orderData);
+        return orderData;
+      } catch (error) {
+        console.log('error', error);
       }
     },
   },

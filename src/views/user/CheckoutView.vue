@@ -1,6 +1,5 @@
 <script setup>
 import { reactive } from 'vue';
-import { RouterLink, useRouter } from 'vue-router';
 
 import UserLayout from '@/layouts/UserLayout.vue';
 import { useCartStore } from '@/stores/user/cart';
@@ -23,7 +22,6 @@ const FormData = [
     field: 'note'
   }
 ];
-const router = useRouter();
 const cartStore = useCartStore();
 
 const userFormData = reactive({
@@ -33,12 +31,11 @@ const userFormData = reactive({
   note: ''
 });
 
-const payment = () => {
+const payment = async () => {
   if (userFormData.email && userFormData.name && userFormData.address) {
-    cartStore.placeorder(userFormData)
-    router.push({
-      name: 'success'
-    })
+    const response = await cartStore.placeorder(userFormData)
+    location.href = response.redirectUrl
+
   } else {
     alert('Please fill out all required fields.');
   }
