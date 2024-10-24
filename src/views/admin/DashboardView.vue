@@ -1,5 +1,9 @@
 <script setup>
+import { onMounted } from 'vue'
+
 import AdminLayout from '@/layouts/AdminLayout.vue'
+
+import { useAdminDashboardStore } from '@/stores/admin/dashboard'
 
 const priceChart = {
     options: {
@@ -21,6 +25,12 @@ const categoryChart = {
     series: [44, 55, 41, 17, 15]
 }
 
+const dashboardStore = useAdminDashboardStore()
+
+onMounted(async () => {
+    await dashboardStore.loadDashboard()
+})
+
 
 </script>
 
@@ -38,7 +48,7 @@ const categoryChart = {
                     </svg>
                 </div>
                 <div class="stat-title">Order</div>
-                <div class="stat-value">31K</div>
+                <div class="stat-value">{{ dashboardStore.stats.order }}</div>
             </div>
 
             <div class="stat">
@@ -51,7 +61,7 @@ const categoryChart = {
                     </svg>
                 </div>
                 <div class="stat-title">Product</div>
-                <div class="stat-value">4,200</div>
+                <div class="stat-value">{{ dashboardStore.stats.product }}</div>
 
             </div>
 
@@ -65,7 +75,7 @@ const categoryChart = {
                     </svg>
                 </div>
                 <div class="stat-title">User</div>
-                <div class="stat-value">1,200</div>
+                <div class="stat-value">{{ dashboardStore.stats.user }}</div>
             </div>
         </div>
         <div class="flex">

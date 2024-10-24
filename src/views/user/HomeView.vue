@@ -16,7 +16,7 @@ const productStore = useProductStore();
 
 const addToCart = (product) => {
   cartStore.addToCart(product)
-  eventStore.popupMessage('success', 'Add product to cart is successful')
+  eventStore.popupMessage('success', 'Add to cart is successful')
 }
 
 const buyNow = (product) => {

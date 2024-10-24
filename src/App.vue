@@ -19,8 +19,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="eventStore.alert" class="toast">
-    <div class="alert" :class="`aleart-${eventStore.data.status}`">
+  <div v-if="eventStore.alert" class="toast toast-top toast-end">
+    <div class="alert" :class="`alert-${eventStore.data.status}`">
       <span>{{ eventStore.data.message }}</span>
     </div>
   </div>

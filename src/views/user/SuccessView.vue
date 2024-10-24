@@ -1,13 +1,20 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import UserLayout from '@/layouts/UserLayout.vue';
 import { useCartStore } from '@/stores/user/cart';
 
-const route = useRoute();
 
+import { useEventStore } from '@/stores/event'
+
+
+const route = useRoute();
+const router = useRouter();
+
+const eventStore = useEventStore();
 const cartStore = useCartStore();
 const orderData = ref({});
+
 
 onMounted(async () => {
   const orderId = route.query.order_id;
@@ -16,14 +23,11 @@ onMounted(async () => {
       const data = await cartStore.loadCheckout(orderId);
       if (data) {
         orderData.value = data;
-      } else {
-        console.log('No order data found');
       }
     } catch (error) {
-      console.log('Error loading checkout data:', error);
+      router.push({ name: 'home' })
+      eventStore.popupMessage('error', 'Order unsuccessful !')
     }
-  } else {
-    console.log('No order ID provided');
   }
 });
 

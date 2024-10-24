@@ -20,7 +20,7 @@ const login = async () => {
             name: 'admin-dashboard'
         })
     } catch (error) {
-        eventStore.popupMessage('error', error.message)
+        eventStore.popupMessage('info', error.message)
     }
 }
 

@@ -17,10 +17,10 @@ const orderData = ref({
     products: []
 })
 
-onMounted(() => {
+onMounted(async () => {
     if (route.params.id) {
-        orderIndex.value = parseInt(route.params.id)
-        const selectedOrder = adminOrderStore.getOrder(orderIndex.value)
+        orderIndex.value = route.params.id
+        const selectedOrder = await adminOrderStore.getOrder(orderIndex.value)
         orderData.value = selectedOrder
     }
 })
@@ -37,11 +37,11 @@ onMounted(() => {
             <div class="grid grid-cols-2 gap-2">
                 <div>
                     <div class="font-bold">Order Date</div>
-                    <div>{{ orderData.updatedAt }}</div>
+                    <div>{{ orderData.createdAt }}</div>
                 </div>
                 <div>
                     <div class="font-bold">Order Number</div>
-                    <div>{{ orderData.no }}</div>
+                    <div>{{ orderData.orderId }}</div>
                 </div>
                 <div>
                     <div class="font-bold">Payment Method</div>
@@ -71,7 +71,7 @@ onMounted(() => {
             <div class="divider"></div>
             <div class="flex justify-between">
                 <div class="font-bold">Total Price</div>
-                <div class="mr-5">{{ orderData.totalPrice }}</div>
+                <div class="mr-5">{{ orderData.totalPrice }} $</div>
             </div>
             <div class="flex justify-end">
                 <RouterLink :to="{ name: 'admin-order-list' }" class="btn btn-ghost m-3">Back</RouterLink>

@@ -1,11 +1,31 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db, realtimeDB } from '@/firebase';
 import { ref, onValue, set } from 'firebase/database';
 
 import { useAccountStore } from '@/stores/account';
+
+Omise.setPublicKey(import.meta.env.VITE_OMISE_PUBLIC_KEY);
+
+const createSource = (amount) => {
+  return new Promise((resolve, reject) => {
+    Omise.createSource(
+      'rabbit_linepay',
+      {
+        amount: amount * 100,
+        currency: 'THB',
+      },
+      (statusCode, response) => {
+        if (statusCode !== 200) {
+          return reject(response);
+        }
+        resolve(response);
+      }
+    );
+  });
+};
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
@@ -90,8 +110,10 @@ export const useCartStore = defineStore('cart', {
           })),
         };
 
+        const omiseResponse = await createSource(this.summaryPrice);
+
         const response = await axios.post('/api/placeorder', {
-          source: 'test_src',
+          source: omiseResponse.id, //omise source token
           checkout: checkoutData,
         });
         return response.data;
@@ -101,10 +123,6 @@ export const useCartStore = defineStore('cart', {
     },
     async loadCheckout(orderId) {
       try {
-        // check rule
-        const orderRefs = collection(db, 'orders');
-        getDocs(orderRefs);
-
         const orderRef = doc(db, 'orders', orderId);
         const orderSnapshot = await getDoc(orderRef);
         let orderData = orderSnapshot.data();
@@ -112,7 +130,7 @@ export const useCartStore = defineStore('cart', {
         orderData.orderNumber = orderSnapshot.id;
         return orderData;
       } catch (error) {
-        console.log('error', error);
+        throw new Error(error.message);
       }
     },
   },

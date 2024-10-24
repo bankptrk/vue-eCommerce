@@ -3,14 +3,43 @@ const express = require('express');
 const app = express();
 const { db, auth } = require('./firebaseConfig.js');
 
+const omise = require('omise')({
+  secretKey: process.env.OMISE_SECRET_KEY,
+  omiseVersion: '2019-05-29',
+});
+
+const createCharge = (source, amount, orderId) => {
+  return new Promise((resolve, reject) => {
+    omise.charges.create(
+      {
+        amount: amount * 100,
+        currency: 'THB',
+        return_uri: `http://localhost:5173/success?order_id=${orderId}`,
+        metadata: {
+          orderId,
+        },
+        source,
+      },
+      (err, resp) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(resp);
+      }
+    );
+  });
+};
+
 app.post('/placeorder', async (req, res) => {
   try {
     let checkoutProducts = [];
     let totalPrice = 0;
     let orderData = {};
     let successOrderId = '';
+    let omiseResponse = {};
     const checkoutData = req.body.checkout;
     const products = checkoutData.products;
+    const sourceOmise = req.body.source;
 
     await db.runTransaction(async (transaction) => {
       for (const product of products) {
@@ -38,14 +67,16 @@ app.post('/placeorder', async (req, res) => {
       const orderRef = db.collection('orders');
       const orderId = orderRef.doc().id;
 
+      omiseResponse = await createCharge(sourceOmise, totalPrice, orderId);
+
       orderData = {
         ...checkoutData,
-        chargeId: `charge ${orderId}`,
+        chargeId: omiseResponse.id,
         products: checkoutProducts,
         totalPrice,
         paymentMethod: 'rabbit_linepay',
         createAt: new Date(),
-        status: 'successful',
+        status: 'pending',
       };
       transaction.set(orderRef.doc(orderId), orderData);
 
@@ -55,13 +86,53 @@ app.post('/placeorder', async (req, res) => {
     // Send response back
     res.json({
       message: 'Hello from firebase',
-      redirectUrl: `http://localhost:5173/success?order_id=${successOrderId}`,
+      redirectUrl: omiseResponse.authorize_uri,
     });
   } catch (error) {
     res.status(500).json({
       message: 'Error processing order',
       error: error.message,
     });
+  }
+});
+
+app.post('/webhook', async (req, res) => {
+  try {
+    if (req.body.key === 'charge.complete') {
+      const webhookData = req.body.data;
+      const orderId = webhookData.metadata.orderId;
+      const chargeId = webhookData.id;
+      const statusOrder = webhookData.status;
+
+      const orderRef = db.collection('orders').doc(orderId);
+      const orderSnapshot = await orderRef.get();
+      const orderData = orderSnapshot.data();
+
+      if (orderData.chargeId !== chargeId) {
+        throw new Error('charge not found');
+      }
+      if (orderData.status === 'pending') {
+        await orderRef.update({
+          status: statusOrder,
+        });
+        if (statusOrder !== 'successful') {
+          db.runTransaction(async (transaction) => {
+            for (const product of orderData.products) {
+              const productRef = db
+                .collection('products')
+                .doc(product.productId);
+              const productSnapshot = await productRef.get();
+              const productData = productSnapshot.data();
+              transaction.update(productRef, {
+                remainQuantity: productData.remainQuantity + product.quantity,
+              });
+            }
+          });
+        }
+      }
+    }
+  } catch (error) {
+    console.log('error', error);
   }
 });
 
