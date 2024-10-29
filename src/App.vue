@@ -19,10 +19,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="eventStore.alert" class="toast toast-top toast-end">
+  <div v-if="eventStore.alert" class="toast toast-end toast-middle">
     <div class="alert" :class="`alert-${eventStore.data.status}`">
       <span>{{ eventStore.data.message }}</span>
     </div>
   </div>
   <RouterView />
 </template>
+
+<style>
+.toast {
+  z-index: 9999;
+}
+</style>

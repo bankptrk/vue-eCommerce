@@ -3,6 +3,7 @@ import { reactive } from 'vue';
 
 import UserLayout from '@/layouts/UserLayout.vue';
 import { useCartStore } from '@/stores/user/cart';
+import { useEventStore } from '@/stores/event'
 
 const FormData = [
   {
@@ -22,7 +23,8 @@ const FormData = [
     field: 'note'
   }
 ];
-const cartStore = useCartStore();
+const cartStore = useCartStore()
+const eventStore = useEventStore()
 
 const userFormData = reactive({
   email: '',
@@ -32,14 +34,20 @@ const userFormData = reactive({
 });
 
 const payment = async () => {
-  if (userFormData.email && userFormData.name && userFormData.address) {
-    const response = await cartStore.placeorder(userFormData)
-    location.href = response.redirectUrl
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  if (userFormData.email && userFormData.name && userFormData.address) {
+    if (emailPattern.test(userFormData.email)) {
+      const response = await cartStore.placeorder(userFormData);
+      location.href = response.redirectUrl;
+    } else {
+      eventStore.popupMessage('error', 'Please enter a valid email address.');
+    }
   } else {
-    alert('Please fill out all required fields.');
+    eventStore.popupMessage('error', 'Please fill out all required fields.');
   }
 };
+
 </script>
 
 <template>
