@@ -1,7 +1,9 @@
 const { onRequest } = require('firebase-functions/v2/https');
+const { onDocumentWritten } = require('firebase-functions/v2/firestore');
+
 const express = require('express');
 const app = express();
-const { db, auth } = require('./firebaseConfig.js');
+const { db, auth, realtimeDB } = require('./firebaseConfig.js');
 
 const omise = require('omise')({
   secretKey: process.env.OMISE_SECRET_KEY,
@@ -138,3 +140,19 @@ app.post('/webhook', async (req, res) => {
 
 // Expose the API
 exports.api = onRequest(app);
+
+exports.updateOrder = onDocumentWritten('orders/{orderId}', async (event) => {
+  const oldData = event.data.before.data();
+  const newData = event.data.after.data();
+
+  const orderStatRef = realtimeDB.ref('stats/order');
+  if (
+    newData.status === 'successful' &&
+    oldData &&
+    oldData.status === 'pending'
+  ) {
+    await orderStatRef.transaction((curr) => {
+      return curr + newData.totalPrice;
+    });
+  }
+});

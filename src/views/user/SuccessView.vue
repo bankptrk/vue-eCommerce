@@ -26,7 +26,7 @@ onMounted(async () => {
       }
     } catch (error) {
       router.push({ name: 'home' })
-      eventStore.popupMessage('error', 'Order unsuccessful !')
+      eventStore.popupMessage('error', 'Order unsuccessful!')
     }
   }
 });

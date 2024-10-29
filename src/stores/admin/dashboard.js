@@ -14,9 +14,13 @@ export const useAdminDashboardStore = defineStore('admin-dashboard', {
   }),
   actions: {
     async loadDashboard() {
-      const statRef = ref(realtimeDB, 'stats');
-      const statSnapshot = await get(statRef);
-      this.stats = statSnapshot.val();
+      try {
+        const statRef = ref(realtimeDB, 'stats');
+        const statSnapshot = await get(statRef);
+        this.stats = statSnapshot.val();
+      } catch (error) {
+        console.log('error', error);
+      }
     },
   },
 });

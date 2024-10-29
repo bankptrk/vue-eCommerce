@@ -10,9 +10,12 @@ import {
 
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
+import { getStorage, ref, getDownloadURL } from 'firebase/storage';
+
 import { auth, db } from '@/firebase';
 
 const provider = new GoogleAuthProvider();
+const storage = getStorage();
 
 export const useAccountStore = defineStore('account', {
   state: () => ({
@@ -38,11 +41,18 @@ export const useAccountStore = defineStore('account', {
               if (docSnap.exists()) {
                 this.profile = docSnap.data();
               } else {
+                const defaultImageRef = ref(
+                  storage,
+                  'default_profile/user.png'
+                );
+                const defaultImageUrl = await getDownloadURL(defaultImageRef);
+
                 const newUser = {
                   fullname: user.displayName,
                   role: 'member',
                   status: 'active',
                   updateAt: new Date(),
+                  imageUrl: defaultImageUrl,
                 };
                 await setDoc(docRef, newUser);
                 this.profile = newUser;
@@ -77,6 +87,9 @@ export const useAccountStore = defineStore('account', {
     },
     async updateProfile(userData) {
       try {
+        if (userData.fullname === this.profile.fullname) {
+          throw new Error('Fullname is the same as the current fullname.');
+        }
         const updateUserData = {
           fullname: userData.fullname,
           imageUrl: userData.imageUrl,
