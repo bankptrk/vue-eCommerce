@@ -117,6 +117,8 @@ router.beforeEach(async (to, from, next) => {
     next({ name: 'admin-dashboard' });
   } else if (to.name === 'profile' && !accountStore.isLoggedIn) {
     next({ name: 'home' });
+  } else if (to.name === 'checkout' && cartStore.items.length === 0) {
+    next({ name: 'cart' });
   } else {
     next();
   }

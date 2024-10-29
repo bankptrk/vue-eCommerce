@@ -67,7 +67,16 @@ const changeQuantity = (event, index) => {
             <div>ราคารวม</div>
             <div>{{ cartStore.summaryPrice }}</div>
           </div>
-          <RouterLink :to="{ name: 'checkout' }" class="btn btn-neutral w-full mt-4">Buy</RouterLink>
+          <div v-if="cartStore.items.length === 0">
+            <button class="btn btn-neutral w-full mt-4" disabled>
+              Buy
+            </button>
+          </div>
+          <div v-else>
+            <RouterLink :to="{ name: 'checkout' }" class="btn btn-neutral w-full mt-4">
+              Buy
+            </RouterLink>
+          </div>
         </div>
       </div>
     </div>
