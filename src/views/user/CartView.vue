@@ -1,11 +1,18 @@
 <script setup>
+import { ref, watch } from 'vue';
+import { RouterLink } from 'vue-router';
+
 import UserLayout from '@/layouts/UserLayout.vue';
 import Close from '@/components/icons/Close.vue';
 import { useCartStore } from '@/stores/user/cart';
-import { RouterLink } from 'vue-router';
-
 
 const cartStore = useCartStore();
+
+const isDarkTheme = ref(localStorage.getItem('theme') === 'dark');
+
+watch(() => localStorage.getItem('theme'), (newTheme) => {
+  isDarkTheme.value = newTheme === 'dark';
+});
 
 const changeQuantity = (event, index) => {
   const newQuantity = parseInt(event.target.value)
@@ -52,7 +59,8 @@ const changeQuantity = (event, index) => {
           </div>
         </div>
       </div>
-      <div class="flex-auto w-32 bg-slate-100 p-2">
+      <div :class="[isDarkTheme ? 'bg-neutral text-neutral-content' : 'bg-slate-100 text-black']"
+        class="flex-auto w-32 p-2">
         <div class="text-xl font-bold">Order Summary</div>
         <div class="my-4 divide-y divide-black">
           <div class="flex justify-between py-2">

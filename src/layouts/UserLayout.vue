@@ -25,7 +25,7 @@ onMounted(() => {
 const login = async () => {
   try {
     await accountStore.signInWithGoogle()
-    window.location.reload()
+    location.reload()
   } catch (error) {
     console.log(error)
   }
@@ -34,7 +34,7 @@ const login = async () => {
 const logout = async () => {
   try {
     await accountStore.logout()
-    window.location.reload()
+    location.reload()
   } catch (error) {
     console.log(error)
   }
