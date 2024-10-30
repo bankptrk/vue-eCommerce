@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, onMounted } from 'vue';
+import { computed, reactive, onMounted } from 'vue';
 import UserLayout from '@/layouts/UserLayout.vue';
 import { storage } from '@/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -28,6 +28,10 @@ onMounted(() => {
     eventStore.popupMessage('success', 'Update successful');
     localStorage.removeItem('profileUpdateSuccess');
   }
+});
+
+const hasChanges = computed(() => {
+  return profileData.fullname !== accountStore.profile.fullname || profileData.imageFile !== null;
 });
 
 const handleFileUpload = async (event) => {
@@ -60,15 +64,13 @@ const updateProfile = async () => {
       email: profileData.email,
     };
 
-    await accountStore.updateProfile(updateProfileData);
-
     if (profileData.imageFile) {
       const uploadRef = ref(storage, `users/${accountStore.user.uid}/${profileData.imageFile.name}`);
       const snapshot = await uploadBytes(uploadRef, profileData.imageFile);
       const downloadUrl = await getDownloadURL(snapshot.ref);
       updateProfileData.imageUrl = downloadUrl;
     }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await accountStore.updateProfile(updateProfileData);
     localStorage.setItem('profileUpdateSuccess', 'true');
     location.reload();
   } catch (error) {
@@ -110,7 +112,8 @@ const updateProfile = async () => {
         <input v-model="profileData.fullname" type="text" placeholder="Type here" class="input input-bordered w-full" />
       </label>
 
-      <button @click="updateProfile" class="btn btn-neutral w-full m-4" :disabled="profileData.isLoading">
+      <button @click="updateProfile" class="btn btn-neutral w-full m-4"
+        :disabled="profileData.isLoading || !hasChanges">
         Update Profile
       </button>
 
