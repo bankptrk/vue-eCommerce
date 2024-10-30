@@ -128,8 +128,10 @@ export const useCartStore = defineStore('cart', {
         let orderData = orderSnapshot.data();
         orderData.createAt = orderData.createAt.toDate();
         orderData.orderNumber = orderSnapshot.id;
+        console.log('Order data loaded:', orderData);
         return orderData;
       } catch (error) {
+        console.error('Failed to load checkout:', error.message);
         throw new Error(error.message);
       }
     },

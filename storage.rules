@@ -17,8 +17,6 @@ service firebase.storage {
     match /default_profile/{allPaths=**} {
       allow read;
     }
-
-
   }
 
 }

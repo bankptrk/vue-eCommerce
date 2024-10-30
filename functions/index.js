@@ -3,7 +3,7 @@ const { onDocumentWritten } = require('firebase-functions/v2/firestore');
 
 const express = require('express');
 const app = express();
-const { db, auth, realtimeDB } = require('./firebaseConfig.js');
+const { db, realtimeDB } = require('./firebaseConfig.js');
 
 const omise = require('omise')({
   secretKey: process.env.OMISE_SECRET_KEY,
@@ -37,7 +37,6 @@ app.post('/placeorder', async (req, res) => {
     let checkoutProducts = [];
     let totalPrice = 0;
     let orderData = {};
-    let successOrderId = '';
     let omiseResponse = {};
     const checkoutData = req.body.checkout;
     const products = checkoutData.products;
@@ -99,6 +98,10 @@ app.post('/placeorder', async (req, res) => {
 });
 
 app.post('/webhook', async (req, res) => {
+  // console.log('webhook body', req.body);
+  // res.json({
+  //   message: 'hook ok',
+  // });
   try {
     if (req.body.key === 'charge.complete') {
       const webhookData = req.body.data;
@@ -146,13 +149,44 @@ exports.updateOrder = onDocumentWritten('orders/{orderId}', async (event) => {
   const newData = event.data.after.data();
 
   const orderStatRef = realtimeDB.ref('stats/order');
+  const successfulOrderCountRef = realtimeDB.ref('stats/user');
+
   if (
     newData.status === 'successful' &&
-    oldData &&
-    oldData.status === 'pending'
+    (!oldData || oldData.status === 'pending')
   ) {
     await orderStatRef.transaction((curr) => {
-      return curr + newData.totalPrice;
+      return (curr || 0) + newData.totalPrice;
+    });
+
+    await successfulOrderCountRef.transaction((curr) => {
+      return (curr || 0) + 1;
     });
   }
 });
+
+exports.updateProduct = onDocumentWritten(
+  'products/{productId}',
+  async (event) => {
+    const oldData = event.data.before.data();
+    const newData = event.data.after.data();
+
+    console.log('oldData', oldData);
+    console.log('newData', newData);
+
+    const orderStatRef = realtimeDB.ref('stats/product');
+
+    if (
+      oldData &&
+      newData &&
+      oldData.remainQuantity !== newData.remainQuantity
+    ) {
+      const quantityPurchased = oldData.remainQuantity - newData.remainQuantity;
+      if (quantityPurchased > 0) {
+        await orderStatRef.transaction((curr) => {
+          return (curr || 0) + quantityPurchased;
+        });
+      }
+    }
+  }
+);

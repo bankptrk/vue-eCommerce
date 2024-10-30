@@ -44,6 +44,9 @@ export const useAdminProductStore = defineStore('admin-product', {
     },
     async addProduct(productData) {
       try {
+        productData.price = Number(productData.price);
+        productData.quantity = Number(productData.quantity);
+
         productData.remainQuantity = productData.quantity;
         productData.updateAt = new Date();
         const productCol = collection(db, 'products');
@@ -57,9 +60,9 @@ export const useAdminProductStore = defineStore('admin-product', {
         const updateProductData = {};
         updateProductData.name = productData.name;
         updateProductData.imageUrl = productData.imageUrl;
-        updateProductData.price = productData.price;
-        updateProductData.quantity = productData.quantity;
-        updateProductData.remainQuantity = productData.quantity;
+        updateProductData.price = Number(productData.price);
+        updateProductData.quantity = Number(productData.quantity);
+        updateProductData.remainQuantity = Number(productData.quantity);
         updateProductData.status = productData.status;
         updateProductData.updateAt = new Date();
 

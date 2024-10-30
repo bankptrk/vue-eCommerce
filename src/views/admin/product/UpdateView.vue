@@ -23,11 +23,13 @@ const formData = [
     },
     {
         name: 'Price',
-        field: 'price'
+        field: 'price',
+        type: 'number'
     },
     {
         name: 'Quantity',
-        field: 'quantity'
+        field: 'quantity',
+        type: 'number'
     },
     {
         name: 'About',
@@ -122,8 +124,8 @@ onMounted(async () => {
                     <div class="label">
                         <span class="label-text">{{ form.name }}</span>
                     </div>
-                    <input v-if="form.type !== 'upload-image'" v-model="productData[form.field]" type="text"
-                        placeholder="Type here" class="input input-bordered w-full " />
+                    <input v-if="form.type !== 'upload-image'" v-model="productData[form.field]"
+                        :type="form.type || 'text'" placeholder="Type here" class="input input-bordered w-full " />
                     <div v-else>
                         <div class="avatar">
                             <div class="w-24 rounded-full">
